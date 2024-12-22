@@ -1,0 +1,38 @@
+{
+	"name": "shopify-app-template-node",
+	"private": true,
+	"license": "UNLICENSED",
+	"scripts": {
+		"dev": "cross-env NODE_ENV=development tsx watch index.ts --ignore ./frontend",
+		"serve": "cross-env NODE_ENV=production node index.js",
+		"prisma": "prisma"
+	},
+	"type": "module",
+	"engines": {
+		"node": "v20.11.0",
+		"npm": "10.2.4"
+	},
+	"prisma": {
+		"schema": "libs/prisma/schema.prisma"
+	},
+	"dependencies": {
+		"@prisma/client": "^5.22.0",
+		"@shopify/shopify-app-express": "^5.0.8",
+		"@shopify/shopify-app-session-storage-mysql": "^4.0.8",
+		"compression": "^1.7.5",
+		"cross-env": "^7.0.3",
+		"dotenv": "^16.4.5",
+		"serve-static": "^1.16.2"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.0",
+		"@types/node": "^22.9.3",
+		"@types/react": "^18.3.12",
+		"@types/react-dom": "^18.3.1",
+		"@types/serve-static": "^1.15.7",
+		"nodemon": "^3.1.7",
+		"prisma": "^5.22.0",
+		"tsx": "^4.19.2",
+		"typescript": "^5.7.2"
+	}
+}

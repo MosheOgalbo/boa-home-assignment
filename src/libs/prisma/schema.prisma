@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model session {
+  id               String  @id @db.VarChar(255)
+  shop             String  @db.VarChar(255)
+  state            String  @db.VarChar(255)
+  isOnline         Int     @db.TinyInt
+  scope            String? @db.VarChar(1024)
+  expires          Int?
+  onlineAccessInfo String? @db.VarChar(255)
+  accessToken      String? @db.VarChar(255)
+
+  @@map("shopify_sessions")
+}
+
+model shopify_sessions_migrations {
+  migration_name String @id @db.VarChar(255)
+}
