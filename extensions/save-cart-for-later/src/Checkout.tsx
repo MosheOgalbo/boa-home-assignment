@@ -12,6 +12,6 @@ function Extension() {
   return (
     <BlockStack border={"dotted"} padding={"tight"}>
       <Banner title="save-cart-for-later">Good luck with your assignment!</Banner>
-    </BlockStack>
+      </BlockStack>
   );
 }

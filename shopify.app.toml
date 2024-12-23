@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "40984690914cf86ab7f00173d8ba487b"
-application_url = "https://samba-nodes-tub-affect.trycloudflare.com"
+application_url = "https://spent-presents-surveys-quantitative.trycloudflare.com"
 embedded = true
 name = "boa-home-task-MO"
 handle = "boa-home-task-mo"
@@ -16,13 +16,13 @@ api_version = "2024-10"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = ""
+scopes = "read_customers,read_products,write_customers,write_products"
 
 [auth]
 redirect_urls = [
-  "https://samba-nodes-tub-affect.trycloudflare.com/auth/callback",
-  "https://samba-nodes-tub-affect.trycloudflare.com/auth/shopify/callback",
-  "https://samba-nodes-tub-affect.trycloudflare.com/api/auth/callback"
+  "https://spent-presents-surveys-quantitative.trycloudflare.com/auth/callback",
+  "https://spent-presents-surveys-quantitative.trycloudflare.com/auth/shopify/callback",
+  "https://spent-presents-surveys-quantitative.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
