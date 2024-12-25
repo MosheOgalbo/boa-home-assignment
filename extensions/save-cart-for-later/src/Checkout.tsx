@@ -9,18 +9,27 @@ import {
     useApi,
     useStorage,
   } from '@shopify/ui-extensions-react/checkout';
-  import { useState } from 'react';
+  import { useState, useEffect } from 'react';
 
   export default reactExtension('purchase.checkout.block.render', () => <Extension />);
 
   function Extension() {
     const cartLines = useCartLines();
-    const { sessionToken } = useApi();
+    const { sessionToken, customer } = useApi();
     const storage = useStorage();
 
     const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{type: 'info' | 'success' | 'warning' | 'critical', content: string} | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+    useEffect(() => {
+      if (customer) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    }, [customer]);
 
     const handleCheckboxChange = (variantId: string) => {
       setSelectedItems(prev => {
@@ -139,6 +148,12 @@ import {
           </Banner>
         )}
 
+        {!isLoggedIn && (
+          <Banner status="info">
+            Please log in to save items for later.
+          </Banner>
+        )}
+
         <BlockStack spacing="tight">
           {cartLines.map((line) => (
             <Checkbox
@@ -146,7 +161,7 @@ import {
               name={`save-${line.merchandise.id}`}
               checked={selectedItems.includes(line.merchandise.id)}
               onChange={() => handleCheckboxChange(line.merchandise.id)}
-              disabled={isSaving}
+              disabled={isSaving || !isLoggedIn}
             >
               <Text>{line.merchandise.title}</Text>
             </Checkbox>
@@ -155,7 +170,7 @@ import {
 
         <Button
           onPress={handleSave}
-          disabled={isSaving || selectedItems.length === 0}
+          disabled={isSaving || selectedItems.length === 0 || !isLoggedIn}
         >
           {isSaving ? 'Saving...' : `Save ${selectedItems.length} Selected Items`}
         </Button>
