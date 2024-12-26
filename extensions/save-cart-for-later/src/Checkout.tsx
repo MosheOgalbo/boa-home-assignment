@@ -27,7 +27,7 @@ import {
     useEffect(() => {
       const checkLoginStatus = async () => {
         const token = await sessionToken.get();
-        setIsLoggedIn(!!token);
+        setIsLoggedIn(Boolean(token));
       };
       checkLoginStatus();
     }, [sessionToken]);
@@ -79,14 +79,11 @@ import {
         try {
           const timestamp = Math.floor(Date.now() / 1000).toString();
 
-          // בנה את כתובת ה-URL לבקשה
           const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
           appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
           appProxyUrl.searchParams.append('path_prefix', '/apps');
           appProxyUrl.searchParams.append('subpath', 'boa-home-task-bv');
           appProxyUrl.searchParams.append('path', 'save-cart');
-
-          console.log('Making request to:', appProxyUrl.toString());
 
           const response = await fetch('https://scenarios-energy-msgid-long.trycloudflare.com/app_proxy', {
             method: 'POST',
@@ -101,10 +98,7 @@ import {
             })
           });
 
-          console.log('Response status:', response.status);
-
           const responseText = await response.text();
-          console.log('Raw response:', responseText);
 
           if (!response.ok) {
             let errorMessage = 'Failed to save to backend';
@@ -141,30 +135,17 @@ import {
       }
     };
 
-    // אם המשתמש לא מחובר, הצג הודעה
-    if (!isLoggedIn) {
-      return (
-        <BlockStack spacing="loose" padding="base">
-          <Banner status="critical">
-            You must log in to view your cart.
-          </Banner>
-        </BlockStack>
-      );
-    }
-
-    // אם העגלה ריקה, הצג הודעה
-    if (cartLines.length === 0) {
-      return (
-        <BlockStack spacing="loose" padding="base">
-          <Text>Add items to your cart to save them for later.</Text>
-        </BlockStack>
-      );
-    }
-
-    // הצג את רשימת הפריטים אם המשתמש מחובר ויש פריטים בעגלה
     return (
       <BlockStack border="base" padding="base" spacing="loose">
+        {/* כותרת הבחירה */}
         <Text size="medium" emphasis="bold">Save items for later</Text>
+
+        {/* הצג הודעת קריטית אם המשתמש לא מחובר */}
+        {!isLoggedIn && (
+          <Banner status="critical">
+            You must log in to save items for later.
+          </Banner>
+        )}
 
         {message && (
           <Banner status={message.type}>
@@ -188,7 +169,7 @@ import {
 
         <Button
           onPress={handleSave}
-          disabled={isSaving || selectedItems.length === 0}
+          disabled={isSaving || selectedItems.length === 0 || !isLoggedIn}
         >
           {isSaving ? 'Saving...' : `Save ${selectedItems.length} Selected Items`}
         </Button>
