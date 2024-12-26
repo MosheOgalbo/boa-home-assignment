@@ -19,5 +19,8 @@
   "author": "BOA Ideas",
   "overrides": {
     "@types/react": "17.0.30"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
   }
 }
