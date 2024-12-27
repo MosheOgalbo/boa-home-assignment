@@ -99,10 +99,10 @@ function Extension() {
                 const customerId = await sessionToken.get();
 
                 // Ensure correct proxy URL and parameters
-                const appProxyUrl = new URL('/app_proxy', 'https://your-correct-url.com');
-                appProxyUrl.searchParams.append('shop', 'your-shop-name.myshopify.com');
+                const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
+                appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
                 appProxyUrl.searchParams.append('path_prefix', '/boa-home-task-MO');
-                appProxyUrl.searchParams.append('subpath', 'save-cart');
+                appProxyUrl.searchParams.append('subpath', 'retrieve-cart');
 
                 const response = await fetch(appProxyUrl.toString(), {
                     method: 'POST',
