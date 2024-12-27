@@ -25,19 +25,24 @@ function Extension() {
     const [bgColor, setBgColor] = useState<string>('#ffffff'); // Default background color
     const [textColor, setTextColor] = useState<string>('#000000'); // Default text color
 
-    // Check if the user is logged in
+    // Check if the user is logged in and update the UI accordingly
     useEffect(() => {
         const checkLoginStatus = async () => {
-            const token = await sessionToken.get();
-            setIsLoggedIn(Boolean(token));
+            try {
+                const token = await sessionToken.get();
+                setIsLoggedIn(Boolean(token));
 
-            // If the user is logged in, change the background and text colors
-            if (token) {
-                setBgColor('#e0ffe0'); // Greenish background for logged-in users
-                setTextColor('#007500'); // Dark green text for logged-in users
-            } else {
-                setBgColor('#ffcccc'); // Light red background for logged-out users
-                setTextColor('#cc0000'); // Red text for logged-out users
+                // If the user is logged in, change the background and text colors
+                if (token) {
+                    setBgColor('#e0ffe0'); // Greenish background for logged-in users
+                    setTextColor('#007500'); // Dark green text for logged-in users
+                } else {
+                    setBgColor('#ffcccc'); // Light red background for logged-out users
+                    setTextColor('#cc0000'); // Red text for logged-out users
+                }
+            } catch (error) {
+                console.error('Error checking login status:', error);
+                setIsLoggedIn(false);  // Default to logged-out state in case of error
             }
         };
         checkLoginStatus();
@@ -93,13 +98,13 @@ function Extension() {
                 // Use actual customer id from sessionToken
                 const customerId = await sessionToken.get();
 
-                const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
-                appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
+                // Ensure correct proxy URL and parameters
+                const appProxyUrl = new URL('/app_proxy', 'https://your-correct-url.com');
+                appProxyUrl.searchParams.append('shop', 'your-shop-name.myshopify.com');
                 appProxyUrl.searchParams.append('path_prefix', '/apps');
-                appProxyUrl.searchParams.append('subpath', 'boa-home-task-MO');
-                appProxyUrl.searchParams.append('path', 'save-cart');
+                appProxyUrl.searchParams.append('subpath', 'save-cart');
 
-                const response = await fetch('https://scenarios-energy-msgid-long.trycloudflare.com/app_proxy', {
+                const response = await fetch(appProxyUrl.toString(), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -132,7 +137,7 @@ function Extension() {
             } catch (backendError) {
                 console.error('Backend save error:', backendError);
                 setMessage({
-                    type: 'success',
+                    type: 'warning',
                     content: `Saved ${selectedProducts.length} items locally`
                 });
             }
@@ -151,7 +156,6 @@ function Extension() {
 
     return (
         <BlockStack border="base" padding="base" spacing="loose" style={{ backgroundColor: bgColor }}>
-            {/* Selection title */}
             <Text size="medium" emphasis="bold" style={{ color: textColor }}>Save items for later</Text>
 
             {/* Display a critical message if the user is not logged in */}
