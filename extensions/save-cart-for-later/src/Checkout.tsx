@@ -101,7 +101,7 @@ function Extension() {
                 // Ensure correct proxy URL and parameters
                 const appProxyUrl = new URL('/app_proxy', 'https://your-correct-url.com');
                 appProxyUrl.searchParams.append('shop', 'your-shop-name.myshopify.com');
-                appProxyUrl.searchParams.append('path_prefix', '/apps');
+                appProxyUrl.searchParams.append('path_prefix', '/boa-home-task-MO');
                 appProxyUrl.searchParams.append('subpath', 'save-cart');
 
                 const response = await fetch(appProxyUrl.toString(), {
