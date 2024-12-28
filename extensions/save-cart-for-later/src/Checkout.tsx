@@ -22,33 +22,53 @@ function Extension() {
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'info' | 'success' | 'warning' | 'critical', content: string } | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [bgColor, setBgColor] = useState<string>('#ffffff'); // Default background color
-    const [textColor, setTextColor] = useState<string>('#000000'); // Default text color
+    const [savedCart, setSavedCart] = useState<any[]>([]);
 
-    // Check if the user is logged in and update the UI accordingly
+    // בדוק אם המשתמש מחובר ועדכן את הצבעים הדינמיים
     useEffect(() => {
         const checkLoginStatus = async () => {
             try {
                 const token = await sessionToken.get();
                 setIsLoggedIn(Boolean(token));
-
-                // If the user is logged in, change the background and text colors
-                if (token) {
-                    setBgColor('#e0ffe0'); // Greenish background for logged-in users
-                    setTextColor('#007500'); // Dark green text for logged-in users
-                } else {
-                    setBgColor('#ffcccc'); // Light red background for logged-out users
-                    setTextColor('#cc0000'); // Red text for logged-out users
-                }
             } catch (error) {
                 console.error('Error checking login status:', error);
-                setIsLoggedIn(false);  // Default to logged-out state in case of error
+                setIsLoggedIn(false); // ברירת מחדל למשתמש לא מחובר במקרה של שגיאה
             }
         };
         checkLoginStatus();
     }, [sessionToken]);
 
-    // Handling checkbox state change
+    // קבל את העגלה השמורה מהשרת
+    useEffect(() => {
+        const fetchSavedCart = async () => {
+            if (isLoggedIn) {
+                const token = await sessionToken.get();
+                const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
+                appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
+                appProxyUrl.searchParams.append('path_prefix', '/boa-home-task-MO');
+                appProxyUrl.searchParams.append('subpath', 'retrieve-cart');
+
+                try {
+                    const response = await fetch(appProxyUrl.toString(), {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+                    const data = await response.json();
+                    setSavedCart(data.items || []);
+                } catch (error) {
+                    console.error('Error fetching saved cart:', error);
+                }
+            }
+        };
+
+        if (isLoggedIn) {
+            fetchSavedCart();
+        }
+    }, [isLoggedIn, sessionToken]);
+
+    // שינוי מצב הצ'קבוקס
     const handleCheckboxChange = (variantId: string) => {
         setSelectedItems(prev => {
             if (prev.includes(variantId)) {
@@ -58,7 +78,7 @@ function Extension() {
         });
     };
 
-    // Handling the storage of selected items
+    // שמור את הפריטים בשרת
     const handleSave = async () => {
         if (selectedItems.length === 0) return;
 
@@ -75,79 +95,44 @@ function Extension() {
             }
 
             const token = await sessionToken.get();
-            if (!token) {
-                throw new Error('Authentication failed');
-            }
-
             const selectedProducts = cartLines
                 .filter(line => selectedItems.includes(line.merchandise.id))
                 .map(line => ({
                     variantId: line.merchandise.id,
-                    quantity: line.quantity
+                    quantity: line.quantity,
                 }));
 
-            // Save the items in local memory
-            await storage.write('savedCart', JSON.stringify({
-                items: selectedProducts
-            }));
+            const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
+            appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
+            appProxyUrl.searchParams.append('path_prefix', '/boa-home-task-MO');
+            appProxyUrl.searchParams.append('subpath', 'save-cart');
 
-            // Save the items on the server
-            try {
-                const timestamp = Math.floor(Date.now() / 1000).toString();
+            const response = await fetch(appProxyUrl.toString(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    items: selectedProducts,
+                    customer_id: 'test-customer', // שנה לפי הצורך
+                }),
+            });
 
-                // Use actual customer id from sessionToken
-                const customerId = await sessionToken.get();
-
-                // Ensure correct proxy URL and parameters
-                const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
-                appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
-                appProxyUrl.searchParams.append('path_prefix', '/boa-home-task-MO');
-                appProxyUrl.searchParams.append('subpath', 'retrieve-cart');
-
-                const response = await fetch(appProxyUrl.toString(), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        items: selectedProducts,
-                        customer_id: customerId, // Use dynamic customer_id
-                        timestamp
-                    })
-                });
-
-                const responseText = await response.text();
-
-                if (!response.ok) {
-                    let errorMessage = 'Failed to save to backend';
-                    try {
-                        const errorData = responseText ? JSON.parse(responseText) : null;
-                        errorMessage = errorData?.message || errorMessage;
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                setMessage({
-                    type: 'success',
-                    content: `Saved ${selectedProducts.length} items for later`
-                });
-            } catch (backendError) {
-                console.error('Backend save error:', backendError);
-                setMessage({
-                    type: 'warning',
-                    content: `Saved ${selectedProducts.length} items locally`
-                });
+            if (!response.ok) {
+                throw new Error('Failed to save cart. Please try again.');
             }
 
+            setMessage({
+                type: 'success',
+                content: `Saved ${selectedProducts.length} items for later.`,
+            });
             setSelectedItems([]);
         } catch (error) {
             console.error('Save cart error:', error);
             setMessage({
                 type: 'critical',
-                content: error instanceof Error ? error.message : 'Unable to save items. Please try again.'
+                content: error instanceof Error ? error.message : 'Unable to save items. Please try again.',
             });
         } finally {
             setIsSaving(false);
@@ -155,24 +140,27 @@ function Extension() {
     };
 
     return (
-        <BlockStack border="base" padding="base" spacing="loose" style={{ backgroundColor: bgColor }}>
-            <Text size="medium" emphasis="bold" style={{ color: textColor }}>Save items for later</Text>
+        <BlockStack border="base" padding="base" spacing="loose">
+            {/* כותרת */}
+            <Text size="medium" emphasis="bold">Save items for later</Text>
 
-            {/* Display a critical message if the user is not logged in */}
+            {/* הודעה אם המשתמש לא מחובר */}
             {!isLoggedIn && (
-                <Banner status="critical" style={{ backgroundColor: '#ffcccc' }}>
+                <Banner status="critical">
                     You must log in to save items for later.
                 </Banner>
             )}
 
+            {/* הודעה למשתמש */}
             {message && (
-                <Banner status={message.type} style={{ backgroundColor: message.type === 'critical' ? '#ffcccc' : '#e0ffe0' }}>
+                <Banner status={message.type}>
                     {message.content}
                 </Banner>
             )}
 
+            {/* רשימת המוצרים */}
             <BlockStack spacing="tight">
-                {cartLines.map((line) => (
+                {cartLines.map(line => (
                     <Checkbox
                         key={line.merchandise.id}
                         name={`save-${line.merchandise.id}`}
@@ -185,12 +173,32 @@ function Extension() {
                 ))}
             </BlockStack>
 
+            {/* כפתור שמירה */}
             <Button
                 onPress={handleSave}
                 disabled={isSaving || selectedItems.length === 0 || !isLoggedIn}
             >
                 {isSaving ? 'Saving...' : `Save ${selectedItems.length} Selected Items`}
             </Button>
+
+            {/* כפתור שליפת עגלה */}
+            {isLoggedIn && savedCart.length > 0 && (
+                <Button
+                    onPress={() => {
+                        savedCart.forEach(item => {
+                            fetch('/cart/add.js', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ id: item.variantId, quantity: item.quantity }),
+                            });
+                        });
+                    }}
+                >
+                    Retrieve Saved Cart
+                </Button>
+            )}
         </BlockStack>
     );
 }

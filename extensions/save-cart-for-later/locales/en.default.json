@@ -1,3 +1,41 @@
 {
-  "example": ""
-}
+    "extension": {
+      "title": "Save items for later",
+      "login": {
+        "required": "You must log in to save or retrieve items."
+      },
+      "buttons": {
+        "save": "Save {count} Selected Items",
+        "saving": "Saving...",
+        "retrieve": "Retrieve Saved Cart",
+        "retrieving": "Retrieving..."
+      },
+      "messages": {
+        "success": {
+          "saved": "Saved {count} items for later",
+          "retrieved": "Successfully added {count} items to your cart"
+        },
+        "error": {
+          "auth": "Authentication failed",
+          "save": "Failed to save cart",
+          "retrieve": "Failed to retrieve saved cart",
+          "add": "Failed to add items to cart",
+          "general": "Unable to save items. Please try again."
+        },
+        "warning": {
+          "localSave": "Saved {count} items locally"
+        },
+        "info": {
+          "noSavedCart": "No saved cart found"
+        }
+      },
+      "modal": {
+        "title": "Override Existing Cart?",
+        "content": "You already have a saved cart. Would you like to replace it?",
+        "buttons": {
+          "cancel": "Cancel",
+          "confirm": "Replace"
+        }
+      }
+    }
+  }
