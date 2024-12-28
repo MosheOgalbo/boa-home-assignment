@@ -24,7 +24,7 @@ function Extension() {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [savedCart, setSavedCart] = useState<any[]>([]);
 
-    // בדוק אם המשתמש מחובר ועדכן את הצבעים הדינמיים
+    // Check if the user is logged in and update the dynamic colors
     useEffect(() => {
         const checkLoginStatus = async () => {
             try {
@@ -32,13 +32,13 @@ function Extension() {
                 setIsLoggedIn(Boolean(token));
             } catch (error) {
                 console.error('Error checking login status:', error);
-                setIsLoggedIn(false); // ברירת מחדל למשתמש לא מחובר במקרה של שגיאה
+                setIsLoggedIn(false); // Defaults to user not logged in in case of error
             }
         };
         checkLoginStatus();
     }, [sessionToken]);
 
-    // קבל את העגלה השמורה מהשרת
+    // Get the saved cart from the server
     useEffect(() => {
         const fetchSavedCart = async () => {
             if (isLoggedIn) {
@@ -68,7 +68,7 @@ function Extension() {
         }
     }, [isLoggedIn, sessionToken]);
 
-    // שינוי מצב הצ'קבוקס
+    // Changing the checkbox state
     const handleCheckboxChange = (variantId: string) => {
         setSelectedItems(prev => {
             if (prev.includes(variantId)) {
@@ -78,7 +78,7 @@ function Extension() {
         });
     };
 
-    // שמור את הפריטים בשרת
+    //Save the items on the server
     const handleSave = async () => {
         if (selectedItems.length === 0) return;
 
@@ -115,7 +115,7 @@ function Extension() {
                 },
                 body: JSON.stringify({
                     items: selectedProducts,
-                    customer_id: 'test-customer', // שנה לפי הצורך
+                    customer_id: 'test-customer',
                 }),
             });
 
@@ -141,24 +141,24 @@ function Extension() {
 
     return (
         <BlockStack border="base" padding="base" spacing="loose">
-            {/* כותרת */}
+            {/* title */}
             <Text size="medium" emphasis="bold">Save items for later</Text>
 
-            {/* הודעה אם המשתמש לא מחובר */}
+            {/* Message if the user is not logged in */}
             {!isLoggedIn && (
                 <Banner status="critical">
                     You must log in to save items for later.
                 </Banner>
             )}
 
-            {/* הודעה למשתמש */}
+            {/*Notice to the user*/}
             {message && (
                 <Banner status={message.type}>
                     {message.content}
                 </Banner>
             )}
 
-            {/* רשימת המוצרים */}
+            {/* The list of products*/}
             <BlockStack spacing="tight">
                 {cartLines.map(line => (
                     <Checkbox
@@ -173,7 +173,7 @@ function Extension() {
                 ))}
             </BlockStack>
 
-            {/* כפתור שמירה */}
+            {/* Save button */}
             <Button
                 onPress={handleSave}
                 disabled={isSaving || selectedItems.length === 0 || !isLoggedIn}
@@ -181,7 +181,7 @@ function Extension() {
                 {isSaving ? 'Saving...' : `Save ${selectedItems.length} Selected Items`}
             </Button>
 
-            {/* כפתור שליפת עגלה */}
+            {/* Cart pull button */}
             {isLoggedIn && savedCart.length > 0 && (
                 <Button
                     onPress={() => {
