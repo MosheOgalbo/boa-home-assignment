@@ -11,8 +11,6 @@ import {
 } from '@shopify/ui-extensions-react/checkout';
 import { useState, useEffect } from 'react';
 
-export default reactExtension('purchase.checkout.block.render', () => <Extension />);
-
 function Extension() {
     const cartLines = useCartLines();
     const { sessionToken } = useApi();
@@ -29,6 +27,7 @@ function Extension() {
         const checkLoginStatus = async () => {
             try {
                 const token = await sessionToken.get();
+
                 setIsLoggedIn(Boolean(token));
             } catch (error) {
                 console.error('Error checking login status:', error);
@@ -102,7 +101,7 @@ function Extension() {
                     quantity: line.quantity,
                 }));
 
-            const appProxyUrl = new URL('/app_proxy', 'https://scenarios-energy-msgid-long.trycloudflare.com');
+            const appProxyUrl = new URL('/app_proxy',  process.env.APP_PROXY_URL ||'https://scenarios-energy-msgid-long.trycloudflare.com');
             appProxyUrl.searchParams.append('shop', 'home-assignment-113.myshopify.com');
             appProxyUrl.searchParams.append('path_prefix', '/boa-home-task-MO');
             appProxyUrl.searchParams.append('subpath', 'save-cart');
@@ -140,7 +139,12 @@ function Extension() {
     };
 
     return (
-        <BlockStack border="base" padding="base" spacing="loose">
+        <BlockStack
+            border="base"
+            padding="base"
+            spacing="loose"
+
+        >
             {/* title */}
             <Text size="medium" emphasis="bold">Save items for later</Text>
 
@@ -202,3 +206,5 @@ function Extension() {
         </BlockStack>
     );
 }
+
+export default reactExtension('purchase.checkout.block.render', () => <Extension />);
